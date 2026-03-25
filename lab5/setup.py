@@ -9,7 +9,7 @@ setup(
     version="0.0.1",
     packages=find_packages(exclude=["test"]),
     data_files=[
-        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        ('share/ament_index/resource_index/packages', ['resource/lab5']),
         ("share/" + package_name, ["package.xml"]),
         (os.path.join("share", package_name, "launch"), glob(os.path.join("launch", "*launch.[pxy]*"))),
         (os.path.join("share", package_name, "rviz"), glob(os.path.join("rviz", "*.rviz"))),
