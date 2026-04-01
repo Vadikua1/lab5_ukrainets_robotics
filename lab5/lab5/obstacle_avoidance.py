@@ -54,7 +54,7 @@ class ObstacleAvoidanceNode(Node):
         if not self.odom_received:
             return
 
-        # 1. Розрахунок дистанції до цілі
+        #  Розрахунок дистанції до цілі
         dx = self.goal_x - self.robot_x
         dy = self.goal_y - self.robot_y
         dist_to_goal = math.sqrt(dx**2 + dy**2)
@@ -65,7 +65,7 @@ class ObstacleAvoidanceNode(Node):
         else:
             f_att_x, f_att_y = 0.0, 0.0
 
-        # 3. Сила відштовхування (Repulsive Force)
+        #  Сила відштовхування (Repulsive Force)
         f_rep_x = 0.0
         f_rep_y = 0.0
         rays_count = 0
@@ -82,7 +82,7 @@ class ObstacleAvoidanceNode(Node):
                 obs_angle = angle_min + (i * angle_inc) + self.robot_yaw
                 rep_mag = self.k_rep * (1.0/dist - 1.0/self.dist_threshold) / (dist**2)
                 
-                # ФІКС 1: Жорсткий ліміт на силу відштовхування
+                # Жорсткий ліміт на силу відштовхування
                 rep_mag = min(rep_mag, 3.0) 
 
                 f_rep_x -= rep_mag * math.cos(obs_angle)
@@ -93,7 +93,7 @@ class ObstacleAvoidanceNode(Node):
             f_rep_x /= rays_count
             f_rep_y /= rays_count
             
-            # ФІКС 2: "Розумна" дотична сила (обтікання стіни)
+            # обтікання стіни
             t_left_x, t_left_y = -f_rep_y, f_rep_x
             t_right_x, t_right_y = f_rep_y, -f_rep_x
             
