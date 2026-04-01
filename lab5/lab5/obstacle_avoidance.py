@@ -19,10 +19,10 @@ class ObstacleAvoidanceNode(Node):
         self.declare_parameter("goal_y", 3.5)
 
         # --- НАЛАШТУВАННЯ СИЛ (Тюнінг для проходження перешкод) ---
-        self.k_att = 0.5          # Сила тяги до цілі (зменшено для балансу)
-        self.k_rep = 0.8          # Сила відштовхування (збільшено, щоб стіни "били")
-        self.k_tangent = 1.2      # Сила "обтікання" (допомагає огинати перешкоди)
-        self.dist_threshold = 0.8  # Реакція на стіни далі (80 см), щоб завчасно повертав
+        self.k_att = 0.5          # Сила тяги до цілі 
+        self.k_rep = 0.5          # Сила відштовхування 
+        self.k_tangent = 1.5      # Сила "обтікання" 
+        self.dist_threshold = 0.8  # Реакція на стіни далі (80 см)
 
         self.goal_x = self.get_parameter("goal_x").value
         self.goal_y = self.get_parameter("goal_y").value
@@ -82,20 +82,31 @@ class ObstacleAvoidanceNode(Node):
                 obs_angle = angle_min + (i * angle_inc) + self.robot_yaw
                 rep_mag = self.k_rep * (1.0/dist - 1.0/self.dist_threshold) / (dist**2)
                 
+                # ФІКС 1: Жорсткий ліміт на силу відштовхування
+                rep_mag = min(rep_mag, 3.0) 
+
                 f_rep_x -= rep_mag * math.cos(obs_angle)
                 f_rep_y -= rep_mag * math.sin(obs_angle)
                 rays_count += 1
 
-        # ФІКС: Усереднюємо вектори, щоб сила не множилася на кількість променів
         if rays_count > 0:
             f_rep_x /= rays_count
             f_rep_y /= rays_count
             
-            # Додаємо дотичну силу (обтікання) до вже усередненого вектора
-            # Поворот вектора відштовхування на 90 градусів проти годинникової
-            tangent_x = -f_rep_y * self.k_tangent
-            tangent_y = f_rep_x * self.k_tangent
+            # ФІКС 2: "Розумна" дотична сила (обтікання стіни)
+            t_left_x, t_left_y = -f_rep_y, f_rep_x
+            t_right_x, t_right_y = f_rep_y, -f_rep_x
             
+            # Скалярний добуток покаже, який з напрямків ближчий до вектора цілі
+            dot_left = t_left_x * f_att_x + t_left_y * f_att_y
+            dot_right = t_right_x * f_att_x + t_right_y * f_att_y
+            
+            # Вибираємо найвигідніший шлях
+            if dot_left > dot_right:
+                tangent_x, tangent_y = t_left_x * self.k_tangent, t_left_y * self.k_tangent
+            else:
+                tangent_x, tangent_y = t_right_x * self.k_tangent, t_right_y * self.k_tangent
+                
             f_rep_x += tangent_x
             f_rep_y += tangent_y
 
