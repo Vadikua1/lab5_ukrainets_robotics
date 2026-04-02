@@ -25,7 +25,7 @@ cd lab2_ukrainets_robotics
 Build the Docker image
 (Required for the first run or after Dockerfile changes):
 ```bash
-./scripts/cmd build
+./scripts/cmd build-docker
 ```
 ### Start the container:
 ```bash
